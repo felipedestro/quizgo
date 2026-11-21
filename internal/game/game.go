@@ -22,7 +22,7 @@ func (g *State) selectCategory(files fs.FS) ([]model.Question, error) {
 	}
 
 	fmt.Println("\n=================================")
-	fmt.Printf("Seja bem vindo, %s", g.Name)
+	fmt.Printf("Seja bem vindo, %s\n", g.Name)
 	fmt.Println("=================================")
 	fmt.Println()
 	fmt.Println("Selecione um categoria para jogar: ")
