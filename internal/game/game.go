@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io/fs"
 	"os"
+	"strings"
+	"time"
 
 	"github.com/felipedestro/quiz/internal/helper"
 	"github.com/felipedestro/quiz/internal/model"
@@ -19,19 +21,25 @@ func (g *State) selectCategory(files fs.FS) ([]model.Question, error) {
 		3: {ID: 3, Text: "Matemática", File: "internal/data/quiz_matematica.csv"},
 	}
 
-	fmt.Println("\n-------------------------------------------------")
+	fmt.Println("\n=================================")
 	fmt.Printf("Seja bem vindo, %s", g.Name)
-	fmt.Println("-------------------------------------------------\n")
+	fmt.Println("=================================")
+	fmt.Println()
 	fmt.Println("Selecione um categoria para jogar: ")
 
 	for category := range categories {
 		fmt.Printf("\033[33m[%d] - %s\033[0m\n", categories[category].ID, categories[category].Text)
 	}
 
+	reader := bufio.NewReader(os.Stdin)
+
 	for {
-		reader := bufio.NewReader(os.Stdin)
-		read, _ := reader.ReadString('\n')
-		answer, err := helper.ToInt(read[:len(read)-1], 3)
+		read, err := helper.ReadInput(reader)
+		if err != nil {
+			return nil, fmt.Errorf("erro ao ler a categoria: %w", err)
+		}
+
+		answer, err := helper.ToInt(strings.TrimSpace(read), 3)
 
 		if err != nil {
 			fmt.Println(err.Error())
@@ -61,7 +69,7 @@ func (g *State) Init(files fs.FS) error {
 		return fmt.Errorf("Erro ao ler o noem: %w", err)
 	}
 
-	g.Name = name
+	g.Name = strings.TrimSpace(name)
 
 	questions, err := g.selectCategory(files)
 
@@ -76,7 +84,11 @@ func (g *State) Init(files fs.FS) error {
 	g.Done = make(chan struct{})
 	g.Timeout = make(chan struct{})
 
-	go stopwatch.StopWatch(minutes, g.Done, g.Timeout)
+	go stopwatch.StopWatch(
+		time.Duration(minutes)*time.Minute,
+		g.Done,
+		g.Timeout,
+	)
 
 	fmt.Printf(
 		"\033[32m\nVocê tem %d minuto(s) para terminar o jogo!\033[0m\n\n",

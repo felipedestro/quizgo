@@ -4,9 +4,7 @@ import (
 	"time"
 )
 
-func StopWatch(minutes int, done <-chan struct{}, timeout chan<- struct{}) {
-	duration := time.Duration(minutes * int(time.Minute))
-
+func StopWatch(duration time.Duration, done <-chan struct{}, timeout chan<- struct{}) {
 	timer := time.NewTimer(duration)
 
 	defer timer.Stop()

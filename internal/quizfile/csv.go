@@ -2,6 +2,7 @@ package quizfile
 
 import (
 	"encoding/csv"
+	"errors"
 	"fmt"
 	"io/fs"
 
@@ -50,6 +51,10 @@ func ProcessCSV(files fs.FS, fileSelect string) ([]model.Question, error) {
 		}
 
 		questions = append(questions, question)
+	}
+
+	if len(questions) == 0 {
+		return nil, errors.New("o arquivo CSV não contém perguntas")
 	}
 
 	return questions, nil
