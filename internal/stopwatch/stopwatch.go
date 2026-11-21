@@ -1,12 +1,10 @@
 package stopwatch
 
 import (
-	"fmt"
-	"os"
 	"time"
 )
 
-func StopWatch(minutes int, done <-chan struct{}) {
+func StopWatch(minutes int, done <-chan struct{}, timeout chan<- struct{}) {
 	duration := time.Duration(minutes * int(time.Minute))
 
 	timer := time.NewTimer(duration)
@@ -15,8 +13,7 @@ func StopWatch(minutes int, done <-chan struct{}) {
 
 	select {
 	case <-timer.C:
-		fmt.Println("Tempo esgotado! Tente novamente.")
-		os.Exit(0)
+		close(timeout)
 
 	case <-done:
 		return

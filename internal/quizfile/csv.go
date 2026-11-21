@@ -32,7 +32,7 @@ func ProcessCSV(files fs.FS, fileSelect string) ([]model.Question, error) {
 			continue
 		}
 
-		if len(records) < 6 {
+		if len(record) < 6 {
 			return nil, fmt.Errorf("linha %d: CSV inválido", index+1)
 		}
 

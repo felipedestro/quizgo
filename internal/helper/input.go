@@ -1,8 +1,10 @@
 package helper
 
 import (
+	"bufio"
 	"errors"
 	"strconv"
+	"strings"
 )
 
 func ToInt(s string, countOptions int) (int, error) {
@@ -17,4 +19,17 @@ func ToInt(s string, countOptions int) (int, error) {
 	}
 
 	return i, nil
+}
+
+func ReadAnswer(reader *bufio.Reader, answers chan<- string) {
+	for {
+		input, err := reader.ReadString('\n')
+
+		if err != nil {
+			close(answers)
+			return
+		}
+
+		answers <- strings.TrimSpace(input)
+	}
 }

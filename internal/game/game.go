@@ -50,7 +50,7 @@ func (g *State) selectCategory(files fs.FS) ([]model.Question, error) {
 	}
 }
 
-func (g *State) Init(files fs.FS) {
+func (g *State) Init(files fs.FS) error {
 	fmt.Println("Seja bem vindo(a) ao quiz")
 	fmt.Println("Escreva o seu nome: ")
 
@@ -58,7 +58,7 @@ func (g *State) Init(files fs.FS) {
 	name, err := reader.ReadString('\n')
 
 	if err != nil {
-		panic("Erro ao ler a string")
+		return fmt.Errorf("Erro ao ler o noem: %w", err)
 	}
 
 	g.Name = name
@@ -66,21 +66,32 @@ func (g *State) Init(files fs.FS) {
 	questions, err := g.selectCategory(files)
 
 	if err != nil {
-		fmt.Println("\nErro ao carregar as questões: ", err)
-		return
+		return fmt.Errorf("\nErro ao carregar as questões: %w", err)
 	}
 
 	g.Questions = questions
 
 	minutes := 5
+
 	g.Done = make(chan struct{})
+	g.Timeout = make(chan struct{})
 
-	go stopwatch.StopWatch(minutes, g.Done)
+	go stopwatch.StopWatch(minutes, g.Done, g.Timeout)
 
-	fmt.Printf("\033[32m\nVocê tem %d minuto(s) para terminar o jogo!\033[0m\n\n", minutes)
+	fmt.Printf(
+		"\033[32m\nVocê tem %d minuto(s) para terminar o jogo!\033[0m\n\n",
+		minutes,
+	)
+
+	return nil
 }
 
-func (g *State) Run() {
+func (g *State) Run() error {
+	reader := bufio.NewReader(os.Stdin)
+	answers := make(chan string)
+
+	go helper.ReadAnswer(reader, answers)
+
 	for index, question := range g.Questions {
 		fmt.Printf("\033[33m %d. %s \033[0m\n", index+1, question.Text)
 
@@ -88,30 +99,38 @@ func (g *State) Run() {
 			fmt.Printf("[%d] %s\n", j+1, option)
 		}
 
-		fmt.Println("Digite uma alternativa: ")
-
-		var answer int
-		var err error
-
 		for {
-			reader := bufio.NewReader(os.Stdin)
-			read, _ := reader.ReadString('\n')
-			answer, err = helper.ToInt(read[:len(read)-1], 4)
+			fmt.Print("Digite uma alternativa: ")
 
-			if err != nil {
-				fmt.Println(err.Error())
-				continue
+			select {
+			case <-g.Timeout:
+				return fmt.Errorf("Tempo Esgotado")
+
+			case input, ok := <-answers:
+				if !ok {
+					return fmt.Errorf("entrada encerrada")
+				}
+
+				answer, err := helper.ToInt(input, len(question.Options))
+
+				if err != nil {
+					fmt.Println(err)
+					continue
+				}
+
+				if answer == question.Answer {
+					fmt.Println("\033[32m Paranbés você acertou!! \033[0m")
+					fmt.Println("______________________________________")
+					g.Points += 10
+				} else {
+					fmt.Println("\033[31m Ops, Errou! \033[0m")
+					fmt.Println("______________________________________")
+				}
 			}
+
 			break
 		}
-
-		if answer == question.Answer {
-			fmt.Println("\033[32m Paranbés você acertou!! \033[0m")
-			fmt.Println("______________________________________")
-			g.Points += 10
-		} else {
-			fmt.Println("\033[31m Ops, Errou! \033[0m")
-			fmt.Println("______________________________________")
-		}
 	}
+
+	return nil
 }

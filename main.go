@@ -12,10 +12,20 @@ var quizFiles embed.FS
 
 func main() {
 	state := game.State{}
-	state.Init(quizFiles)
-	state.Run()
+
+	if err := state.Init(quizFiles); err != nil {
+		fmt.Println("Não foi possível iniciar o jogo", err)
+		return
+	}
+
+	err := state.Run()
 
 	close(state.Done)
+
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 
 	media := 70
 	points := len(state.Questions) * 10
