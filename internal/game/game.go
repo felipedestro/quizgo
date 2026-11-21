@@ -14,9 +14,9 @@ import (
 
 func (g *State) selectCategory(files fs.FS) ([]model.Question, error) {
 	categories := map[int]QuizCategory{
-		1: {ID: 1, Text: "Conhecimentos Gerais", File: "/internal/data/quiz_geral.csv"},
-		2: {ID: 2, Text: "Inglês", File: "/internal/data/quiz_ingles.csv"},
-		3: {ID: 3, Text: "Matemática", File: "/internal/data/quiz_matematica.csv"},
+		1: {ID: 1, Text: "Conhecimentos Gerais", File: "internal/data/quiz_geral.csv"},
+		2: {ID: 2, Text: "Inglês", File: "internal/data/quiz_ingles.csv"},
+		3: {ID: 3, Text: "Matemática", File: "internal/data/quiz_matematica.csv"},
 	}
 
 	fmt.Println("\n-------------------------------------------------")

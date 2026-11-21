@@ -7,6 +7,7 @@ import (
 	"github.com/felipedestro/quiz/internal/game"
 )
 
+//go:embed internal/data/*.csv
 var quizFiles embed.FS
 
 func main() {
