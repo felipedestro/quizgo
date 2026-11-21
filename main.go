@@ -15,6 +15,8 @@ func main() {
 	state.Init(quizFiles)
 	state.Run()
 
+	close(state.Done)
+
 	media := 70
 	points := len(state.Questions) * 10
 	approved := points > 0 && state.Points*100 >= points*media
